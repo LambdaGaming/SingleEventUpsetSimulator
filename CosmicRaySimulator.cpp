@@ -37,6 +37,12 @@ unsigned char* GetRandomAddress( HANDLE proc )
             pages.emplace_back( addr );
         }
     }
+    if ( pages.size() == 0 )
+    {
+        cerr << "Couldn't find any valid memory addresses for selected process. Possible mismatching architectures?" << endl;
+        system( "pause" );
+        exit( 1 );
+    }
     int random = rand() % pages.size();
     return pages[random];
 }
@@ -48,26 +54,33 @@ int main()
     HANDLE proc = OpenProcess( PROCESS_ALL_ACCESS, false, procId );
     if ( !proc )
     {
-        cerr << "Couldn't open process " << procId << ". Try restarting the program as admin." << endl;
+        cerr << "Couldn't open process " << procId << ". Either the program isn't running as admin or the selected process is protected." << endl;
+        system( "pause" );
         exit( 1 );
     }
 
     char buffer[PAGESIZE];
-    int data = int( buffer );
     PVOID addr = GetRandomAddress( proc );
     if ( !ReadProcessMemory( proc, addr, buffer, PAGESIZE, NULL ) )
     {
-        cerr << "Couldn't read memory address 0x" << addr << ". Try restarting the program as admin." << endl;
+        cerr << "Couldn't read memory address 0x" << addr << "." << endl;
+        system( "pause" );
         exit( 1 );
     }
 
+    int data = int( buffer );
     cout << "Old data at address 0x" << addr << ": 0x" << hex << uppercase << int( buffer ) << endl;
     data = ~data;
-    cout << "New data at address 0x" << addr << ": 0x" << hex << uppercase << int( ( char* ) data ) << endl; 
-    if ( !WriteProcessMemory( proc, addr, ( char* ) data, PAGESIZE, NULL) )
+    char newBuffer[PAGESIZE];
+    sprintf_s( newBuffer, "%x", data );
+    cout << newBuffer << endl;
+    if ( !WriteProcessMemory( proc, addr, newBuffer, PAGESIZE, NULL ) )
     {
-        cerr << "Couldn't write memory address 0x" << addr << ". Try restarting the program as admin." << endl;
+        cerr << "Couldn't write to memory address 0x" << addr << "." << endl;
+        system( "pause" );
+        exit( 1 );
     }
-
+    cout << "New data at address 0x" << addr << ": 0x" << hex << uppercase << newBuffer << endl;
     CloseHandle( proc );
+    system( "pause" );
 }
