@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CosmicRaySimulator.cpp">
+    <ClCompile Include="sus.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
