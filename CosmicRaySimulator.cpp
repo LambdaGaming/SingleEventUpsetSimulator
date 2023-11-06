@@ -67,9 +67,9 @@ int main()
     }
 
     // Get a list of memory addresses from the selected process that actually have data, then read a random one from that list
-    char buffer[PAGESIZE];
+    int buffer = 0;
     PVOID addr = GetRandomAddress( proc );
-    if ( !ReadProcessMemory( proc, addr, buffer, PAGESIZE, NULL ) )
+    if ( !ReadProcessMemory( proc, addr, &buffer, sizeof( buffer ), NULL) )
     {
         cerr << "Couldn't read memory address 0x" << addr << "." << endl;
         system( "pause" );
@@ -77,18 +77,15 @@ int main()
     }
 
     // Flip random bit and write it to memory
-    int data = int( buffer );
-    cout << "Old data at address 0x" << addr << ": 0x" << hex << uppercase << int( buffer ) << endl;
-    FlipRandomBit( data );
-    cout << hex << data << endl;
-    sprintf_s( buffer, "0%X", data );
-    /*if ( !WriteProcessMemory( proc, addr, buffer, PAGESIZE, NULL ) )
+    cout << "Old data at address 0x" << addr << ": 0x" << hex << uppercase << buffer << endl;
+    FlipRandomBit( buffer );
+    if ( !WriteProcessMemory( proc, addr, &buffer, sizeof( buffer ), NULL) )
     {
         cerr << "Couldn't write to memory address 0x" << addr << "." << endl;
         system( "pause" );
         exit( 1 );
-    }*/
-    cout << "New data at address 0x" << addr << ": 0x" << hex << uppercase << int( buffer ) << endl;
+    }
+    cout << "New data at address 0x" << addr << ": 0x" << hex << uppercase << buffer << endl;
     CloseHandle( proc );
     system( "pause" );
 }
