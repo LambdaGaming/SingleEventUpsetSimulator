@@ -12,7 +12,6 @@ DWORD GetRandomProcess()
 {
     WTS_PROCESS_INFO *processes = NULL;
     DWORD count = 0;
-    srand( time( NULL ) );
     if ( WTSEnumerateProcesses( WTS_CURRENT_SERVER_HANDLE, NULL, 1, &processes, &count ) )
     {
         int random = rand() % count;
@@ -47,8 +46,16 @@ unsigned char* GetRandomAddress( HANDLE proc )
     return pages[random];
 }
 
+void FlipRandomBit( int &data )
+{
+    int random = rand() % sizeof( int ) * 8; // 4 bytes * 8 bits = 32 bits
+    data ^= ( 1 << random ); // Invert random bit using bitwise XOR
+}
+
 int main()
 {
+    // Generate a list of currently running processes and pick a random one
+    srand( time( NULL ) );
     DWORD procId = GetRandomProcess();
     cout << "Opening process " << procId << endl;
     HANDLE proc = OpenProcess( PROCESS_ALL_ACCESS, false, procId );
@@ -59,6 +66,7 @@ int main()
         exit( 1 );
     }
 
+    // Get a list of memory addresses from the selected process that actually have data, then read a random one from that list
     char buffer[PAGESIZE];
     PVOID addr = GetRandomAddress( proc );
     if ( !ReadProcessMemory( proc, addr, buffer, PAGESIZE, NULL ) )
@@ -68,19 +76,19 @@ int main()
         exit( 1 );
     }
 
+    // Flip random bit and write it to memory
     int data = int( buffer );
     cout << "Old data at address 0x" << addr << ": 0x" << hex << uppercase << int( buffer ) << endl;
-    data = ~data;
-    char newBuffer[PAGESIZE];
-    sprintf_s( newBuffer, "%x", data );
-    cout << newBuffer << endl;
-    if ( !WriteProcessMemory( proc, addr, newBuffer, PAGESIZE, NULL ) )
+    FlipRandomBit( data );
+    cout << hex << data << endl;
+    sprintf_s( buffer, "0%X", data );
+    /*if ( !WriteProcessMemory( proc, addr, buffer, PAGESIZE, NULL ) )
     {
         cerr << "Couldn't write to memory address 0x" << addr << "." << endl;
         system( "pause" );
         exit( 1 );
-    }
-    cout << "New data at address 0x" << addr << ": 0x" << hex << uppercase << newBuffer << endl;
+    }*/
+    cout << "New data at address 0x" << addr << ": 0x" << hex << uppercase << int( buffer ) << endl;
     CloseHandle( proc );
     system( "pause" );
 }
