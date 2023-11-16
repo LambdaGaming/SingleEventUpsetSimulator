@@ -79,7 +79,7 @@ unsigned char* GetRandomAddress( HANDLE proc )
 
 void FlipRandomBit( BYTE &data )
 {
-    BYTE random = rand() % sizeof( BYTE ) * 8;
+    BYTE random = rand() % 8; // 8 bits in a byte
     data ^= ( 1 << random ); // Invert random bit using bitwise XOR
 }
 
