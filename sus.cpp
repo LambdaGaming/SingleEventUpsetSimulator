@@ -4,9 +4,40 @@
 #include <WtsApi32.h>
 #include <vector>
 #pragma comment( lib, "WtsApi32.lib" )
-#define PAGESIZE 4096
 
 using namespace std;
+
+void EnableDebugPerms()
+{
+    // Credits to ChatGPT (surprisingly)
+    // This function is needed for the program to work properly under certain conditions
+    HANDLE token;
+    LUID id;
+    if ( !OpenProcessToken( GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &token ) )
+    {
+        cerr << "Couldn't open process token." << endl;
+        system( "pause" );
+        exit( 1 );
+    }
+    if ( !LookupPrivilegeValue( nullptr, SE_DEBUG_NAME, &id ) )
+    {
+        cerr << "Couldn't lookup privilege value." << endl;
+        system( "pause" );
+        exit( 1 );
+    }
+
+    TOKEN_PRIVILEGES priv;
+    priv.PrivilegeCount = 1;
+    priv.Privileges[0].Luid = id;
+    priv.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+    if ( !AdjustTokenPrivileges( token, FALSE, &priv, sizeof( TOKEN_PRIVILEGES ), nullptr, nullptr ) )
+    {
+        cerr << "Couldn't adjust privileges." << endl;
+        system( "pause" );
+        exit( 1 );
+    }
+    CloseHandle( token );
+}
 
 DWORD GetRandomProcess()
 {
@@ -46,14 +77,17 @@ unsigned char* GetRandomAddress( HANDLE proc )
     return pages[random];
 }
 
-void FlipRandomBit( int &data )
+void FlipRandomBit( BYTE &data )
 {
-    int random = rand() % sizeof( int ) * 8; // 4 bytes * 8 bits = 32 bits
+    BYTE random = rand() % sizeof( BYTE ) * 8;
     data ^= ( 1 << random ); // Invert random bit using bitwise XOR
 }
 
 int main()
 {
+    // Make sure we have the right permissions do be doing all this
+    EnableDebugPerms();
+
     // Generate a list of currently running processes and pick a random one
     srand( time( NULL ) );
     DWORD procId = GetRandomProcess();
@@ -67,7 +101,7 @@ int main()
     }
 
     // Get a list of memory addresses from the selected process that actually have data, then read a random one from that list
-    int buffer = 0;
+    BYTE buffer;
     PVOID addr = GetRandomAddress( proc );
     if ( !ReadProcessMemory( proc, addr, &buffer, sizeof( buffer ), NULL) )
     {
@@ -77,7 +111,7 @@ int main()
     }
 
     // Flip random bit and write it to memory
-    cout << "Old data at address 0x" << addr << ": 0x" << hex << uppercase << buffer << endl;
+    cout << "Old data at address 0x" << addr << ": 0x" << hex << uppercase << int( buffer ) << endl;
     FlipRandomBit( buffer );
     if ( !WriteProcessMemory( proc, addr, &buffer, sizeof( buffer ), NULL) )
     {
@@ -85,7 +119,7 @@ int main()
         system( "pause" );
         exit( 1 );
     }
-    cout << "New data at address 0x" << addr << ": 0x" << hex << uppercase << buffer << endl;
+    cout << "New data at address 0x" << addr << ": 0x" << hex << uppercase << int( buffer ) << endl;
     CloseHandle( proc );
     system( "pause" );
 }
