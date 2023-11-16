@@ -10,7 +10,7 @@ using namespace std;
 void EnableDebugPerms()
 {
     // Credits to ChatGPT (surprisingly)
-    // This function is needed for the program to work properly under certain conditions
+    // This function grants the program debug permissions, which is required under certain conditions
     HANDLE token;
     LUID id;
     if ( !OpenProcessToken( GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &token ) )
@@ -69,7 +69,7 @@ unsigned char* GetRandomAddress( HANDLE proc )
     }
     if ( pages.size() == 0 )
     {
-        cerr << "Couldn't find any valid memory addresses for selected process. Possible mismatching architectures?" << endl;
+        cerr << "Couldn't find any valid memory addresses for selected process." << endl;
         system( "pause" );
         exit( 1 );
     }
@@ -85,7 +85,7 @@ void FlipRandomBit( BYTE &data )
 
 int main()
 {
-    // Make sure we have the right permissions do be doing all this
+    // Make sure we have the right permissions to be doing all this
     EnableDebugPerms();
 
     // Generate a list of currently running processes and pick a random one
@@ -95,7 +95,7 @@ int main()
     HANDLE proc = OpenProcess( PROCESS_ALL_ACCESS, false, procId );
     if ( !proc )
     {
-        cerr << "Couldn't open process " << procId << ". Either the program isn't running as admin or the selected process is protected." << endl;
+        cerr << "Couldn't open process " << procId << ". It's either protected by Windows or the architectures don't match." << endl;
         system( "pause" );
         exit( 1 );
     }
