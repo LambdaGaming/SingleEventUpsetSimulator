@@ -137,7 +137,7 @@ int main()
 {
     int amount = 0;
     cout << "Single-event Upset Simulator (SUS) v1.0 | Copyright (c) 2023 LambdaGaming" << endl;
-    cout << "WARNING!!! THIS PROGRAM EDITS RANDOM BITS OF MEMORY OF RANDOM PROCESSES, WHICH CAN SERIOUSLY SCREW UP YOUR SYSTEM! PROCEED AT YOUR OWN RISK!" << endl << endl;
+    cout << "WARNING!!! THIS PROGRAM EDITS RANDOM BITS OF MEMORY FROM RANDOM PROCESSES, WHICH CAN SERIOUSLY SCREW UP YOUR SYSTEM! PROCEED AT YOUR OWN RISK!" << endl << endl;
     cout << "Enter the amount of random bits you want to flip: ";
     cin >> amount;
     srand( time( NULL ) );
