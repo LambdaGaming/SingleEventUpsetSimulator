@@ -3,9 +3,15 @@
 #include <Windows.h>
 #include <WtsApi32.h>
 #include <vector>
+#include <random>
 #pragma comment( lib, "WtsApi32.lib" )
 
 using namespace std;
+
+struct Memory {
+    unsigned char* Address;
+    SIZE_T RegionSize;
+};
 
 void EnableDebugPerms()
 {
@@ -57,14 +63,17 @@ DWORD GetRandomProcess()
 
 unsigned char* GetRandomAddress( HANDLE proc )
 {
-    vector<unsigned char*> pages;
+    vector<Memory> pages;
     MEMORY_BASIC_INFORMATION page;
     unsigned char* addr;
     for ( addr = NULL; VirtualQueryEx( proc, addr, &page, sizeof( page ) ) == sizeof( page ); addr += page.RegionSize )
     {
         if ( page.State == MEM_COMMIT && page.Type == MEM_PRIVATE && page.Protect == PAGE_READWRITE )
         {
-            pages.emplace_back( addr );
+            Memory mem;
+            mem.Address = addr;
+            mem.RegionSize = page.RegionSize;
+            pages.emplace_back( mem );
         }
     }
     if ( pages.size() == 0 )
@@ -73,8 +82,14 @@ unsigned char* GetRandomAddress( HANDLE proc )
         system( "pause" );
         exit( 1 );
     }
-    int random = rand() % pages.size();
-    return pages[random];
+
+    random_device rd;
+    mt19937 gen( rd() );
+    Memory randomMem = pages[rand() % pages.size()];
+    unsigned char* endAddr = randomMem.Address + randomMem.RegionSize;
+    uniform_int_distribution<uint64_t> dist( ( uint64_t ) randomMem.Address, ( uint64_t ) endAddr );
+    uintptr_t randomAddr = static_cast<uintptr_t>( dist( gen ) );
+    return ( unsigned char* ) randomAddr;
 }
 
 void FlipRandomBit( BYTE &data )
