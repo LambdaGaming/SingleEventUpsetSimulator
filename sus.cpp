@@ -99,16 +99,21 @@ void FlipRandomBit( BYTE &data )
     data ^= ( 1 << random ); // Invert random bit using bitwise XOR
 }
 
-void RunMemoryManipulation()
+void RunMemoryManipulation( DWORD procId )
 {
     // Generate a list of currently running processes and pick a random one
+    bool repeat = false;
 Start:
-    DWORD procId = GetRandomProcess();
+    if ( procId <= 0 || repeat )
+    {
+        procId = GetRandomProcess();
+    }
     cout << "Opening process " << procId << endl;
     HANDLE proc = OpenProcess( PROCESS_ALL_ACCESS, false, procId );
     if ( !proc )
     {
         cerr << "Couldn't open process " << procId << ". It's either protected by Windows or the architectures don't match. Retrying..." << endl;
+        repeat = true;
         goto Start;
     }
 
@@ -118,6 +123,8 @@ Start:
     if ( !ReadProcessMemory( proc, addr, &buffer, sizeof( buffer ), NULL ) )
     {
         cerr << "Couldn't read memory address 0x" << addr << ". Retrying..." << endl;
+        CloseHandle( proc );
+        repeat = true;
         goto Start;
     }
 
@@ -127,6 +134,8 @@ Start:
     if ( !WriteProcessMemory( proc, addr, &buffer, sizeof( buffer ), NULL ) )
     {
         cerr << "Couldn't write to memory address 0x" << addr << ". Retrying..." << endl;
+        CloseHandle( proc );
+        repeat = true;
         goto Start;
     }
     cout << "New data at address 0x" << addr << ": 0x" << hex << uppercase << int( buffer ) << dec << endl;
@@ -136,10 +145,13 @@ Start:
 int main()
 {
     int amount = 0;
-    cout << "Single-event Upset Simulator (SUS) v1.0 | Copyright (c) 2023 LambdaGaming" << endl;
+    DWORD id = 0;
+    cout << "Single-event Upset Simulator (SUS) | Copyright (c) 2023 LambdaGaming" << endl;
     cout << "WARNING!!! THIS PROGRAM EDITS RANDOM BITS OF MEMORY FROM RANDOM PROCESSES, WHICH CAN SERIOUSLY SCREW UP YOUR SYSTEM! PROCEED AT YOUR OWN RISK!" << endl << endl;
     cout << "Enter the amount of random bits you want to flip: ";
     cin >> amount;
+    cout << "Enter the ID of the process you want to target, or enter 0 to select a random process: ";
+    cin >> id;
     srand( time( NULL ) );
 
     // Make sure we have the right permissions to be doing all this
@@ -147,7 +159,7 @@ int main()
 
     for ( int i = 0; i < amount; i++ )
     {
-        RunMemoryManipulation();
+        RunMemoryManipulation( id );
     }
 
     cout << "Process completed." << endl;
