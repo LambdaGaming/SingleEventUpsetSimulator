@@ -78,7 +78,7 @@ unsigned char* GetRandomAddress( HANDLE proc )
     }
     if ( pages.size() == 0 )
     {
-        cerr << "Couldn't find any valid memory addresses for selected process. Aborting..." << endl;
+        cerr << "Couldn't find any valid memory addresses for selected process. The target process may have terminated. Aborting..." << endl;
         system( "pause" );
         exit( 1 );
     }
@@ -146,12 +146,15 @@ int main()
 {
     int amount = 0;
     DWORD id = 0;
+    DWORD delay = 0;
     cout << "Single-event Upset Simulator (SUS) | Copyright (c) 2023 LambdaGaming" << endl;
     cout << "WARNING!!! THIS PROGRAM EDITS RANDOM BITS OF MEMORY FROM RANDOM PROCESSES, WHICH CAN SERIOUSLY SCREW UP YOUR SYSTEM! PROCEED AT YOUR OWN RISK!" << endl << endl;
     cout << "Enter the amount of random bits you want to flip: ";
     cin >> amount;
     cout << "Enter the ID of the process you want to target, or enter 0 to select a random process: ";
     cin >> id;
+    cout << "Enter the amount of milliseconds you want to delay each flip, or enter 0 for no delay: ";
+    cin >> delay;
     srand( time( NULL ) );
 
     // Make sure we have the right permissions to be doing all this
@@ -160,6 +163,7 @@ int main()
     for ( int i = 0; i < amount; i++ )
     {
         RunMemoryManipulation( id );
+        Sleep( delay );
     }
 
     cout << "Process completed." << endl;
