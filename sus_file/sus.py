@@ -15,8 +15,8 @@ with open( finalPath, "rb" ) as file:
 	for i in range( int( numBytes ) ):
 		randOffset = random.randint( 0, len( readByte ) - 1 )
 		randBit = random.randint( 0, 7 )
-		print( f"Old data at offset {randOffset}: {readByte[randOffset]}" )
+		print( f"Old data at offset {hex( randOffset )}: {hex( readByte[randOffset] )}" )
 		readByte[randOffset] ^= ( 1 << randBit )
-		print( f"New data at offset {randOffset}: {readByte[randOffset]}" )
+		print( f"New data at offset {hex( randOffset )}: {hex( readByte[randOffset] )}" )
 with open( finalPath, "wb" ) as file:
 	file.write( readByte )
