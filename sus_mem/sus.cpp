@@ -4,6 +4,11 @@
 #include <WtsApi32.h>
 #include <vector>
 #include <random>
+
+#ifdef WINXP
+#include <time.h>
+#endif
+
 #pragma comment( lib, "WtsApi32.lib" )
 
 using namespace std;
