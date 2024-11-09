@@ -5,6 +5,7 @@
 #include <vector>
 #include <random>
 
+// Time library needed for Windows XP support
 #ifdef WINXP
 #include <time.h>
 #endif
@@ -20,8 +21,7 @@ struct Memory {
 
 void EnableDebugPerms()
 {
-    // Credits to ChatGPT (surprisingly)
-    // This function grants the program debug permissions, which is required under certain conditions
+    // Grants debug permissions so program memory can actually be read
     HANDLE token;
     LUID id;
     if ( !OpenProcessToken( GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &token ) )
@@ -88,7 +88,8 @@ unsigned char* GetRandomAddress( HANDLE proc )
         exit( 1 );
     }
 
-    // Get a truly random address by picking one between the start and end of the page
+    // Get random address between the beginning and end addresses
+    // rand() isn't suitable here, since the range is too big, so we have to use this mess
     random_device rd;
     mt19937 gen( rd() );
     Memory randomMem = pages[rand() % pages.size()];
@@ -152,7 +153,7 @@ int main()
     int amount = 0;
     DWORD id = 0;
     DWORD delay = 0;
-    cout << "Single-event Upset Simulator (SUS) | Copyright (c) 2023 LambdaGaming" << endl;
+    cout << "Single-event Upset Simulator (SUS) | Copyright (c) 2023-2024 OPGman" << endl;
     cout << "WARNING!!! THIS PROGRAM EDITS RANDOM BITS OF MEMORY FROM RANDOM PROCESSES, WHICH CAN SERIOUSLY SCREW UP YOUR SYSTEM! PROCEED AT YOUR OWN RISK!" << endl << endl;
     cout << "Enter the amount of random bits you want to flip: ";
     cin >> amount;

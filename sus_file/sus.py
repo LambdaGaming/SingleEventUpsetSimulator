@@ -1,7 +1,7 @@
 import os
 import random
 
-print( "Single-event Upset Simulator (File Edition) | Copyright (c) 2023 LambdaGaming" )
+print( "Single-event Upset Simulator (File Edition) | Copyright (c) 2023-2024 OPGman" )
 print( "WARNING!!! THIS PROGRAM EDITS RANDOM BITS OF RANDOM FILES, WHICH CAN SERIOUSLY SCREW UP YOUR SYSTEM! PROCEED AT YOUR OWN RISK!" )
 paths = []
 numBytes = input( "Enter the amount of random bits you want to flip: " )
