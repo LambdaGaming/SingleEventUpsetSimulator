@@ -3,6 +3,9 @@
 
  WARNING!!! THIS PROGRAM HAS THE ABILITY TO MODIFY THE MEMORY OF PRETTY MUCH ANY ACTIVELY RUNNING PROCESS ON YOUR PC, INCLUDING SYSTEM SERVICES! PLEASE BE RESPONSIBLE AND ONLY USE IT IN CONTROLLED ENVIRONMENTS WHERE DAMAGE IS EASILY REVERSIBLE! I AM NOT RESPONSIBLE FOR ANY DAMAGES OR OTHER ISSUES THAT MAY OCCUR AS A RESULT OF USING THIS SOFTWARE!
 
+## Linux Version
+ There is also a WIP version available for Linux. It uses the [proc_maps_parser](https://github.com/ouadev/proc_maps_parser) library. It should work roughly the same as the Windows version, though not all features are available yet.
+
 # How it Works
  The program first gathers a list of currently running processes. This includes both system processes and user applications. It then picks a random process from that list and reads its memory. Then, it gathers a list of memory pages from that process that contain data that is able to be written to, and picks a random address from a random page to modify. The address is then modified by taking its existing data and inverting a single bit from it. The actual effects of this flip can range from nothing to a complete system crash and potential corruption or other major issues.
 
